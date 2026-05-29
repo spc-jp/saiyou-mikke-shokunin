@@ -8,6 +8,7 @@
 <!-- ファビコン・アイコン設定 -->
 <link rel="icon" type="image/png" href="https://spc-jp.github.io/saiyou-mikke-shokunin/favicon.png">
 <link rel="apple-touch-icon" href="https://spc-jp.github.io/saiyou-mikke-shokunin/favicon.png">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="採用みっけ">
@@ -1261,7 +1262,7 @@ async function generate() {
         method:'POST',
         headers:{'Content-Type':'application/json'},
         body: JSON.stringify({
-          model:'claude-sonnet-4-20250514',
+          model:'claude-opus-4-6',
           max_tokens:2000,
           messages:[{role:'user',content:[
             {type:'image',source:{type:'base64',media_type:'image/jpeg',data:photoBase64}},
@@ -1269,7 +1270,7 @@ async function generate() {
           ]}]
         })
       });
-      if(!res.ok) { const err=await res.json().catch(()=>({})); throw new Error(err.error?.message||'APIエラー '+res.status); }
+      if(!res.ok) { const errBody=await res.json().catch(()=>({})); console.error('APIエラー詳細:', errBody); throw new Error(errBody.error?.message||'APIエラー '+res.status); }
       const data = await res.json();
       content = data.content.filter(b=>b.type==='text').map(b=>b.text).join('');
     } else {
@@ -1277,12 +1278,12 @@ async function generate() {
         method:'POST',
         headers:{'Content-Type':'application/json'},
         body: JSON.stringify({
-          model:'claude-sonnet-4-20250514',
+          model:'claude-opus-4-6',
           max_tokens:2000,
           messages:[{role:'user',content:prompt}]
         })
       });
-      if(!res.ok) { const err=await res.json().catch(()=>({})); throw new Error(err.error?.message||'APIエラー '+res.status); }
+      if(!res.ok) { const errBody=await res.json().catch(()=>({})); console.error('APIエラー詳細:', errBody); throw new Error(errBody.error?.message||'APIエラー '+res.status); }
       const data = await res.json();
       content = data.content.filter(b=>b.type==='text').map(b=>b.text).join('');
     }
