@@ -1232,51 +1232,6 @@ function goToStep(n) {
 }
 
 
-/* ══ 音声入力 ══ */
-.voice-field {
-  position: relative;
-}
-.voice-field input,
-.voice-field textarea {
-  padding-right: 44px;
-}
-.voice-btn {
-  position: absolute;
-  right: 8px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 32px; height: 32px;
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: 20px;
-  display: flex; align-items: center; justify-content: center;
-  border-radius: 50%;
-  transition: all .2s;
-  padding: 0;
-  color: var(--text-muted);
-}
-.voice-btn:hover { background: var(--bg); color: var(--navy); }
-.voice-btn.listening {
-  color: #e02020;
-  animation: pulse 1s ease-in-out infinite;
-}
-@keyframes pulse {
-  0%, 100% { transform: translateY(-50%) scale(1); }
-  50%       { transform: translateY(-50%) scale(1.25); }
-}
-.voice-field textarea ~ .voice-btn {
-  top: 14px;
-  transform: none;
-}
-.voice-note {
-  font-size: 10px;
-  color: var(--text-muted);
-  margin-top: 4px;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
 
 /* ══ 設定パネル ══ */
 function openPanel() {
@@ -1376,7 +1331,7 @@ async function generate() {
   const companyPR   = localStorage.getItem('sc_companyPR')||'';
   const employ      = getSelectedChips(document.getElementById('employType'));
   const appeal      = getSelectedChips(document.querySelector('.chip-grid:not(#employType):not(#snsType)'));
-  const strength    = getSelectedChips(document.querySelectorAll('.card')[1]?.querySelector('.chip-grid'));
+  const cardEl = document.querySelectorAll('.card')[1]; const strength = getSelectedChips(cardEl ? cardEl.querySelector('.chip-grid') : null);
   const salary      = document.getElementById('salary').value.trim();
   const target      = document.getElementById('targetPerson').value.trim();
   const boss        = document.getElementById('bossMessage').value.trim();
@@ -1440,7 +1395,7 @@ async function generate() {
           ]}]
         })
       });
-      if(!res.ok) { const errBody=await res.json().catch(()=>({})); console.error('APIエラー詳細:', errBody); throw new Error(errBody.error?.message||'APIエラー '+res.status); }
+      if(!res.ok) { const errBody=await res.json().catch(()=>({})); console.error('APIエラー詳細:', errBody); throw new Error((errBody.error && errBody.error.message)||'APIエラー '+res.status); }
       const data = await res.json();
       content = data.content.filter(b=>b.type==='text').map(b=>b.text).join('');
     } else {
@@ -1453,7 +1408,7 @@ async function generate() {
           messages:[{role:'user',content:prompt}]
         })
       });
-      if(!res.ok) { const errBody=await res.json().catch(()=>({})); console.error('APIエラー詳細:', errBody); throw new Error(errBody.error?.message||'APIエラー '+res.status); }
+      if(!res.ok) { const errBody=await res.json().catch(()=>({})); console.error('APIエラー詳細:', errBody); throw new Error((errBody.error && errBody.error.message)||'APIエラー '+res.status); }
       const data = await res.json();
       content = data.content.filter(b=>b.type==='text').map(b=>b.text).join('');
     }
