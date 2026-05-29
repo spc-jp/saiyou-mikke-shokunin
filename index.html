@@ -1399,7 +1399,7 @@ async function generate() {
       console.log('Workerレスポンス:', rawText.substring(0, 200));
       if(!res.ok) { throw new Error('APIエラー ' + res.status + ': ' + rawText.substring(0,100)); }
       const data = JSON.parse(rawText);
-      if(!data || !data.content) throw new Error('レスポンス形式エラー: ' + JSON.stringify(data).substring(0,100));
+      if(!data || !data.content) { alert('Workerの返答:\n' + JSON.stringify(data, null, 2).substring(0, 500)); throw new Error('レスポンス形式エラー'); }
       content = data.content.filter(b=>b.type==='text').map(b=>b.text).join('');
     } else {
       const res = await fetch(WORKER_URL, {
@@ -1415,7 +1415,7 @@ async function generate() {
       console.log('Workerレスポンス:', rawText.substring(0, 200));
       if(!res.ok) { throw new Error('APIエラー ' + res.status + ': ' + rawText.substring(0,100)); }
       const data = JSON.parse(rawText);
-      if(!data || !data.content) throw new Error('レスポンス形式エラー: ' + JSON.stringify(data).substring(0,100));
+      if(!data || !data.content) { alert('Workerの返答:\n' + JSON.stringify(data, null, 2).substring(0, 500)); throw new Error('レスポンス形式エラー'); }
       content = data.content.filter(b=>b.type==='text').map(b=>b.text).join('');
     }
 
