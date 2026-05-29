@@ -1436,8 +1436,8 @@ async function generate() {
     goToStep(3);
 
   } catch(e) {
-    console.error('生成エラー:', e);
-    showToast('⚠️ 通信エラーが発生しました。しばらくして再試行してください。');
+    console.error('生成エラー詳細:', e);
+    alert('エラー内容：' + e.message + '\n\nコンソールに詳細があります');
   } finally {
     document.getElementById('loadingOverlay').classList.remove('show');
   }
