@@ -572,6 +572,53 @@ header {
 }
 .price-tag span { font-size: 14px; font-weight: 400; color: var(--text-muted); }
 
+
+/* ══ 音声入力 ══ */
+.voice-field {
+  position: relative;
+}
+.voice-field input,
+.voice-field textarea {
+  padding-right: 44px;
+}
+.voice-btn {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 32px; height: 32px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 20px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 50%;
+  transition: all .2s;
+  padding: 0;
+  color: var(--text-muted);
+}
+.voice-btn:hover { background: var(--bg); color: var(--navy); }
+.voice-btn.listening {
+  color: #e02020;
+  animation: pulse 1s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%, 100% { transform: translateY(-50%) scale(1); }
+  50%       { transform: translateY(-50%) scale(1.25); }
+}
+.voice-field textarea ~ .voice-btn {
+  top: 14px;
+  transform: none;
+}
+.voice-note {
+  font-size: 10px;
+  color: var(--text-muted);
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
 /* ══ 設定パネル ══ */
 .panel-overlay {
   position: fixed;
@@ -784,7 +831,11 @@ header {
     </div>
     <div class="field">
       <label>会社・職場の自慢・特徴</label>
-      <textarea id="companyPR" placeholder="例：創業30年の地域密着の会社です。若手も活躍中で、未経験からベテランになった社員も多数。残業は月平均10時間以下で、家庭を持ちながら長く働ける環境です。"></textarea>
+      <div class="voice-field">
+        <textarea id="companyPR" placeholder="例：創業30年の地域密着の会社です。若手も活躍中で、未経験からベテランになった社員も多数。残業は月平均10時間以下で、家庭を持ちながら長く働ける環境です。"></textarea>
+        <button class="voice-btn" onclick="startVoice('companyPR')" title="音声入力">🎤</button>
+      </div>
+      <div class="voice-note">🎤 話すだけで自動入力されます</div>
     </div>
     <button class="btn-primary" onclick="saveSettings()" style="margin-top:4px;">✅ 保存する</button>
     <button class="btn-secondary" onclick="loadDemo()">📋 デモデータを入力</button>
@@ -886,7 +937,10 @@ header {
 
         <div class="field">
           <label>募集職種 <span class="req">必須</span></label>
-          <input type="text" id="jobTitle" placeholder="例：機械オペレーター、鉄筋工、大工見習い">
+          <div class="voice-field">
+            <input type="text" id="jobTitle" placeholder="例：機械オペレーター、鉄筋工、大工見習い">
+            <button class="voice-btn" onclick="startVoice('jobTitle')" title="音声入力">🎤</button>
+          </div>
         </div>
 
         <div class="field">
@@ -901,12 +955,18 @@ header {
 
         <div class="field">
           <label>こんな人に来てほしい</label>
-          <input type="text" id="targetPerson" placeholder="例：未経験OK、体力に自信がある方、地元で長く働きたい方">
+          <div class="voice-field">
+            <input type="text" id="targetPerson" placeholder="例：未経験OK、体力に自信がある方、地元で長く働きたい方">
+            <button class="voice-btn" onclick="startVoice('targetPerson')" title="音声入力">🎤</button>
+          </div>
         </div>
 
         <div class="field">
           <label>給与・待遇の目安</label>
-          <input type="text" id="salary" placeholder="例：日給1.5万円〜、月給25万円〜、週払いOK">
+          <div class="voice-field">
+            <input type="text" id="salary" placeholder="例：日給1.5万円〜、月給25万円〜、週払いOK">
+            <button class="voice-btn" onclick="startVoice('salary')" title="音声入力">🎤</button>
+          </div>
         </div>
 
         <div class="field">
@@ -985,7 +1045,11 @@ header {
       <div class="card">
         <div class="card-title"><span class="icon">💬</span>社長・採用担当からのひとこと</div>
         <div class="field">
-          <textarea id="bossMessage" placeholder="例：うちは未経験から始めて10年でベテランになった職人が何人もいます。道具の使い方から丁寧に教えますので、気持ちさえあれば大丈夫。一緒に汗をかきましょう。"></textarea>
+          <div class="voice-field">
+            <textarea id="bossMessage" placeholder="例：うちは未経験から始めて10年でベテランになった職人が何人もいます。道具の使い方から丁寧に教えますので、気持ちさえあれば大丈夫。一緒に汗をかきましょう。"></textarea>
+            <button class="voice-btn" onclick="startVoice('bossMessage')" title="音声入力">🎤</button>
+          </div>
+          <div class="voice-note">🎤 マイクボタンをタップして話しかけるだけ！テキスト入力も可能です</div>
         </div>
         <p style="font-size:11px;color:var(--text-muted);">社長の言葉が一番刺さります。短くてもOKです。</p>
       </div>
@@ -1068,6 +1132,65 @@ header {
 <div class="toast" id="toast"></div>
 
 <script>
+
+/* ══ 音声入力 ══ */
+let currentRecognition = null;
+
+function startVoice(targetId) {
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognition) {
+    showToast('⚠️ このブラウザは音声入力に対応していません（Chrome推奨）');
+    return;
+  }
+
+  // すでに録音中なら停止
+  if (currentRecognition) {
+    currentRecognition.stop();
+    currentRecognition = null;
+    return;
+  }
+
+  const btn = document.querySelector(`[onclick="startVoice('${targetId}')"]`);
+  const target = document.getElementById(targetId);
+
+  const recognition = new SpeechRecognition();
+  recognition.lang = 'ja-JP';
+  recognition.continuous = false;
+  recognition.interimResults = true;
+  currentRecognition = recognition;
+
+  if (btn) btn.classList.add('listening');
+  showToast('🎤 話してください...');
+
+  recognition.onresult = (e) => {
+    const transcript = Array.from(e.results)
+      .map(r => r[0].transcript).join('');
+    if (target) {
+      target.value = (target.value ? target.value + '' : '') + transcript;
+      // inputイベント発火（文字数カウント等のため）
+      target.dispatchEvent(new Event('input'));
+    }
+  };
+
+  recognition.onend = () => {
+    if (btn) btn.classList.remove('listening');
+    currentRecognition = null;
+    showToast('✓ 音声入力完了');
+  };
+
+  recognition.onerror = (e) => {
+    if (btn) btn.classList.remove('listening');
+    currentRecognition = null;
+    if (e.error === 'not-allowed') {
+      showToast('⚠️ マイクの使用を許可してください');
+    } else if (e.error !== 'no-speech') {
+      showToast('⚠️ 音声認識エラー: ' + e.error);
+    }
+  };
+
+  recognition.start();
+}
+
 /* ══ 設定 ══ */
 const WORKER_URL = 'https://tokumeikakun-api.yymmatsu.workers.dev';
 const UNLOCK_PW  = 'spc2025';
@@ -1106,6 +1229,53 @@ function goToStep(n) {
     if(line) { line.classList.toggle('done', i<n); }
   });
   window.scrollTo(0,0);
+}
+
+
+/* ══ 音声入力 ══ */
+.voice-field {
+  position: relative;
+}
+.voice-field input,
+.voice-field textarea {
+  padding-right: 44px;
+}
+.voice-btn {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 32px; height: 32px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 20px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 50%;
+  transition: all .2s;
+  padding: 0;
+  color: var(--text-muted);
+}
+.voice-btn:hover { background: var(--bg); color: var(--navy); }
+.voice-btn.listening {
+  color: #e02020;
+  animation: pulse 1s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%, 100% { transform: translateY(-50%) scale(1); }
+  50%       { transform: translateY(-50%) scale(1.25); }
+}
+.voice-field textarea ~ .voice-btn {
+  top: 14px;
+  transform: none;
+}
+.voice-note {
+  font-size: 10px;
+  color: var(--text-muted);
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 /* ══ 設定パネル ══ */
