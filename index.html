@@ -1360,6 +1360,8 @@ async function generate() {
 - 体力仕事・技術・チームワーク・地域貢献などをキーワードに
 - 若い求職者（20〜30代）にも響く等身大の表現で
 - ウソ・誇張は使わない。現場のリアルを正直に
+- **Markdownは一切使わない**（**太字**、#見出し、- リストなど禁止）
+- コピーしてそのままSNSに貼り付けられる文章にする
 
 以下の5つを必ず生成し、それぞれ【タグ名】で区切って出力してください。
 
@@ -1426,11 +1428,12 @@ async function generate() {
       return m ? m[1].trim() : '（生成に失敗しました）';
     };
 
-    results[0] = parse('Instagram投稿文');
-    results[1] = parse('X投稿文');
-    results[2] = parse('求人票テキスト');
-    results[3] = parse('ハローワーク用文章');
-    results[4] = parse('LINE配信文');
+    const clean = t => t.replace(/\*\*/g,'').replace(/^#+\s/gm,'').replace(/^-\s/gm,'');
+    results[0] = clean(parse('Instagram投稿文'));
+    results[1] = clean(parse('X投稿文'));
+    results[2] = clean(parse('求人票テキスト'));
+    results[3] = clean(parse('ハローワーク用文章'));
+    results[4] = clean(parse('LINE配信文'));
 
     document.getElementById('result-ig').textContent    = results[0];
     document.getElementById('result-x').textContent     = results[1];
